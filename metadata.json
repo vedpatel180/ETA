@@ -1,6 +1,6 @@
 {
-  "name": "RailETA - Indian Railways Dynamic Train Forecast",
-  "description": "Real-time train tracking, dynamic ML-powered ETA forecasting, platform updates, offline alerts, and multi-language arrival notifications for Indian Railways.",
-  "requestFramePermissions": ["notifications", "geolocation"],
+  "name": "New App",
+  "description": "Ready to build your new application",
+  "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
