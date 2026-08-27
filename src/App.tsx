@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { ToastNotificationHost } from './components/ToastNotificationHost';
 import { TrainSearch } from './components/TrainSearch';
@@ -10,28 +10,36 @@ import { StationDisplayBoardModal } from './components/StationDisplayBoardModal'
 import { OfflineAlertsModal } from './components/OfflineAlertsModal';
 import { ArrivalAlertsModal } from './components/ArrivalAlertsModal';
 import { ControlRoomModal } from './components/ControlRoomModal';
+import { AuthScreen } from './components/AuthScreen';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 import { INITIAL_TRAINS } from './data/trainsData';
 import { LiveTrainState, LanguageCode, SignalAspect, WeatherCondition } from './types';
 import { translations } from './data/translations';
-import { recomputeTrainETAs, parseTimeToMinutes } from './utils/predictionEngine';
+import { recomputeTrainETAs } from './utils/predictionEngine';
 import { saveTrainForOffline, isTrainSavedOffline, getOfflineTrains } from './utils/offlineStorage';
 import { getSavedNotificationRules, sendStationArrivalAlert, emitToast } from './utils/notifications';
 import { 
   WifiOff, 
   ShieldCheck, 
   PhoneCall, 
-  HelpCircle, 
   Train, 
   CheckCircle2,
   Tv,
-  BellRing
+  BellRing,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
-export default function App() {
+function MainTrainDashboard({
+  currentLang,
+  setCurrentLang
+}: {
+  currentLang: LanguageCode;
+  setCurrentLang: (lang: LanguageCode) => void;
+}) {
   const [trains, setTrains] = useState<LiveTrainState[]>(INITIAL_TRAINS);
   const [selectedTrain, setSelectedTrain] = useState<LiveTrainState>(INITIAL_TRAINS[0]);
-  const [currentLang, setCurrentLang] = useState<LanguageCode>('en');
   const [isOffline, setIsOffline] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [activeAlertStation, setActiveAlertStation] = useState<string | undefined>(undefined);
@@ -108,7 +116,6 @@ export default function App() {
       const remainingDistance = stop.distanceKm - selectedTrain.currentKm;
       // If train is within 10 km or within arrival threshold
       if (remainingDistance > 0 && remainingDistance <= 12) {
-        // Trigger alert only once per session
         const alertSessionKey = `alerted_${rule.trainNumber}_${rule.stationCode}`;
         if (!sessionStorage.getItem(alertSessionKey)) {
           sessionStorage.setItem(alertSessionKey, 'true');
@@ -229,10 +236,10 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Container */}
+      {/* Main App Body Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Search & Category Filter */}
+        {/* Train Search Component */}
         <TrainSearch
           trains={trains}
           selectedTrain={selectedTrain}
@@ -240,76 +247,73 @@ export default function App() {
           currentLang={currentLang}
         />
 
-        {/* Live Train Hero Card with Dynamic ML Forecast */}
+        {/* Live Train Hero Card with Dynamic ML ETA and Telemetry */}
         <LiveTrainHero
           train={selectedTrain}
-          currentLang={currentLang}
-          isSavedOffline={isSaved}
-          onSaveOffline={handleSaveOffline}
-          onOpenAlertModal={() => {
+          onOpenExplainability={() => setIsExplainModalOpen(true)}
+          onOpenArrivalAlerts={() => {
             setActiveAlertStation(selectedTrain.destStation);
             setIsArrivalAlertsModalOpen(true);
           }}
-          onOpenSMSModal={() => setIsOfflineModalOpen(true)}
-          onExplainClick={() => setIsExplainModalOpen(true)}
-          onStationSelect={(st) => handleOpenAlertForStation(st)}
+          onSaveOffline={handleSaveOffline}
+          isSavedOffline={isSaved}
+          currentLang={currentLang}
         />
 
-        {/* Route Map & Signal Visualizer */}
+        {/* Route Map Visualizer & Live Linear Tracker */}
         <RouteMapVisualizer
           train={selectedTrain}
+          onSelectStation={handleOpenAlertForStation}
           currentLang={currentLang}
-          onSelectStation={(st) => handleOpenAlertForStation(st)}
         />
 
-        {/* Station Timeline with Dynamic ETAs & Platform Info */}
+        {/* Station-by-Station Timetable, Delays, Confidence, and Platform Updates */}
         <StationTimeline
           train={selectedTrain}
+          onOpenAlertForStation={handleOpenAlertForStation}
           currentLang={currentLang}
-          onSetStationAlert={handleOpenAlertForStation}
-          onSelectStation={(st) => handleOpenAlertForStation(st)}
         />
 
       </main>
 
-      {/* Footnote / Footer */}
-      <footer className="bg-white border-t border-slate-200 py-10 px-4 sm:px-6 lg:px-8 text-xs text-slate-500 mt-16">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* Footer & SIH 2026 Credits with Bold Typography */}
+      <footer className="bg-white border-t border-slate-200 py-10 mt-12 text-[#111111]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#003399] flex items-center justify-center text-white font-black shadow-sm">
-              <Train className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-[#003399] flex items-center justify-center text-white font-black text-sm">
+              IR
             </div>
             <div>
-              <div className="font-black text-sm uppercase tracking-tight text-[#111111]">
-                RAILETA • SMART INDIA HACKATHON 2026 (PS ID: 26028)
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium">
-                Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains — Ministry of Railways
+              <p className="text-xs font-black uppercase tracking-widest text-[#111111]">
+                Smart India Hackathon 2026 • PS ID: 26028
+              </p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                Ministry of Railways • Dynamic Expected Arrival & Platform Forecasting Architecture
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs font-black uppercase tracking-wider">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-black uppercase tracking-wider">
             <button
               onClick={() => setIsDisplayBoardModalOpen(true)}
-              className="text-slate-600 hover:text-[#003399] transition-colors flex items-center gap-1.5"
+              className="text-slate-600 hover:text-[#003399] transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Tv className="w-4 h-4" />
               <span>Concourse Display</span>
             </button>
             <button
               onClick={() => setIsOfflineModalOpen(true)}
-              className="text-slate-600 hover:text-[#003399] transition-colors flex items-center gap-1.5"
+              className="text-slate-600 hover:text-[#003399] transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <PhoneCall className="w-4 h-4" />
               <span>139 SMS & SOS</span>
             </button>
             <button
               onClick={() => setIsControlRoomModalOpen(true)}
-              className="text-slate-600 hover:text-[#003399] transition-colors flex items-center gap-1.5"
+              className="text-slate-600 hover:text-[#003399] transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Control Room (SIH Metrics)</span>
+              <span>Control Room Simulator</span>
             </button>
           </div>
         </div>
@@ -354,5 +358,51 @@ export default function App() {
       />
 
     </div>
+  );
+}
+
+function AppContent() {
+  const { user, loading } = useAuth();
+  const [currentLang, setCurrentLang] = useState<LanguageCode>('en');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FDFDFD] flex flex-col items-center justify-center p-6 space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-[#003399] text-white flex items-center justify-center shadow-lg font-black text-2xl animate-pulse">
+          IR
+        </div>
+        <div className="flex items-center gap-2 text-slate-700 font-black text-xs uppercase tracking-widest">
+          <Loader2 className="w-4 h-4 animate-spin text-[#003399]" />
+          <span>Connecting to Firebase & Railway Engine...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <ToastNotificationHost />
+        <AuthScreen 
+          currentLang={currentLang as any} 
+          onLanguageChange={(l) => setCurrentLang(l as LanguageCode)} 
+        />
+      </>
+    );
+  }
+
+  return (
+    <MainTrainDashboard
+      currentLang={currentLang}
+      setCurrentLang={setCurrentLang}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

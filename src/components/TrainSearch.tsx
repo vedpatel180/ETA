@@ -18,7 +18,7 @@ export const TrainSearch: React.FC<TrainSearchProps> = ({
 }) => {
   const t = translations[currentLang];
   const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VANDE_BHARAT' | 'RAJวางHANI' | 'SHATABDI' | 'SUPERFAST'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VANDE_BHARAT' | 'RAJDHANI' | 'SHATABDI' | 'SUPERFAST'>('ALL');
 
   const filteredTrains = trains.filter((train) => {
     const matchesFilter = activeFilter === 'ALL' || train.trainType === activeFilter;
@@ -50,7 +50,7 @@ export const TrainSearch: React.FC<TrainSearchProps> = ({
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="absolute right-28 text-xs font-bold uppercase text-slate-400 hover:text-slate-600 px-2 py-1"
+              className="absolute right-28 text-xs font-bold uppercase text-slate-400 hover:text-slate-600 px-2 py-1 cursor-pointer"
             >
               Clear
             </button>
@@ -65,7 +65,7 @@ export const TrainSearch: React.FC<TrainSearchProps> = ({
       <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar">
         <button
           onClick={() => setActiveFilter('ALL')}
-          className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${
+          className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
             activeFilter === 'ALL'
               ? 'bg-[#111111] text-white shadow-sm'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
@@ -75,7 +75,7 @@ export const TrainSearch: React.FC<TrainSearchProps> = ({
         </button>
         <button
           onClick={() => setActiveFilter('VANDE_BHARAT')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
             activeFilter === 'VANDE_BHARAT'
               ? 'bg-[#003399] text-white shadow-sm'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
@@ -85,9 +85,9 @@ export const TrainSearch: React.FC<TrainSearchProps> = ({
           Vande Bharat 160 km/h
         </button>
         <button
-          onClick={() => setActiveFilter('RAJวางHANI')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${
-            activeFilter === 'RAJวางHANI'
+          onClick={() => setActiveFilter('RAJDHANI')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+            activeFilter === 'RAJDHANI'
               ? 'bg-amber-600 text-white shadow-sm'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
           }`}

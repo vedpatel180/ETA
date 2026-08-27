@@ -9,7 +9,8 @@ import {
   Volume2, 
   Check, 
   Trash2,
-  ShieldCheck
+  ShieldCheck,
+  CloudCheck
 } from 'lucide-react';
 import { LiveTrainState, LanguageCode, NotificationRule } from '../types';
 import { translations } from '../data/translations';
@@ -21,6 +22,8 @@ import {
   saveNotificationRule,
   removeNotificationRule
 } from '../utils/notifications';
+import { useAuth } from '../context/AuthContext';
+import { db, doc, setDoc, deleteDoc, serverTimestamp } from '../lib/firebase';
 
 interface ArrivalAlertsModalProps {
   isOpen: boolean;
@@ -40,6 +43,7 @@ export const ArrivalAlertsModal: React.FC<ArrivalAlertsModalProps> = ({
   if (!isOpen) return null;
 
   const t = translations[currentLang];
+  const { user } = useAuth();
   const [stationCode, setStationCode] = useState<string>(selectedStationCode || train.destStation);
   const [notifyMinutesBefore, setNotifyMinutesBefore] = useState<number>(15);
   const [platformChangeAlert, setPlatformChangeAlert] = useState<boolean>(true);
@@ -62,7 +66,7 @@ export const ArrivalAlertsModal: React.FC<ArrivalAlertsModalProps> = ({
     setPermissionGranted(granted);
   };
 
-  const handleSaveRule = () => {
+  const handleSaveRule = async () => {
     const newRule = saveNotificationRule({
       trainNumber: train.trainNumber,
       stationCode: targetStop.stationCode,
@@ -73,13 +77,43 @@ export const ArrivalAlertsModal: React.FC<ArrivalAlertsModalProps> = ({
       isEnabled: true
     });
     setActiveRules(getSavedNotificationRules());
+
+    // Sync to Firestore if user is authenticated
+    if (user && !user.isAnonymous) {
+      try {
+        const alertDocRef = doc(db, 'users', user.uid, 'alerts', newRule.id);
+        await setDoc(alertDocRef, {
+          id: newRule.id,
+          trainNumber: train.trainNumber,
+          trainName: train.trainName,
+          stationCode: targetStop.stationCode,
+          stationName: targetStop.stationName,
+          notifyMinutesBefore,
+          platformChangeAlert,
+          wakeUpAlarm,
+          createdAt: serverTimestamp()
+        });
+      } catch (err) {
+        console.warn('Firestore alert sync warning:', err);
+      }
+    }
+
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
   };
 
-  const handleDeleteRule = (id: string) => {
+  const handleDeleteRule = async (id: string) => {
     removeNotificationRule(id);
     setActiveRules(getSavedNotificationRules());
+
+    if (user && !user.isAnonymous) {
+      try {
+        const alertDocRef = doc(db, 'users', user.uid, 'alerts', id);
+        await deleteDoc(alertDocRef);
+      } catch (err) {
+        console.warn('Firestore alert delete warning:', err);
+      }
+    }
   };
 
   const handleTestAlert = () => {

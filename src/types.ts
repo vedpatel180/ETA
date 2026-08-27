@@ -44,7 +44,7 @@ export interface DynamicETA {
 export interface LiveTrainState {
   trainNumber: string;
   trainName: string;
-  trainType: 'RAJวางHANI' | 'VANDE_BHARAT' | 'SHATABDI' | 'SUPERFAST' | 'MAIL_EXPRESS' | 'JAN_SHATABDI';
+  trainType: 'RAJDHANI' | 'VANDE_BHARAT' | 'SHATABDI' | 'SUPERFAST' | 'MAIL_EXPRESS' | 'JAN_SHATABDI';
   zone: string; // e.g., "NR", "WR", "ER", "SR", "CR"
   sourceStation: string;
   destStation: string;

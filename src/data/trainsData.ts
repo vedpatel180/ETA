@@ -4,7 +4,7 @@ export const INITIAL_TRAINS: LiveTrainState[] = [
   {
     trainNumber: '12951',
     trainName: 'Mumbai Central - New Delhi Tejas Rajdhani Express',
-    trainType: 'RAJวางHANI',
+    trainType: 'RAJDHANI',
     zone: 'WR',
     sourceStation: 'MMCT',
     destStation: 'NDLS',
@@ -467,7 +467,7 @@ export const INITIAL_TRAINS: LiveTrainState[] = [
   {
     trainNumber: '12301',
     trainName: 'Howrah - New Delhi Rajdhani Express (via Gaya)',
-    trainType: 'RAJวางHANI',
+    trainType: 'RAJDHANI',
     zone: 'ER',
     sourceStation: 'HWH',
     destStation: 'NDLS',
