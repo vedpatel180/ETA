@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Clock,
   Compass,
-  KeyRound,
   Eye,
   EyeOff
 } from 'lucide-react';
@@ -67,20 +66,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setIsSubmitting(false);
       }
     }, 350);
-  };
-
-  // Auto-fill operator demo credentials
-  const fillOperatorDemo = () => {
-    setOperatorEmail('trainetaoperator@gmail.com');
-    setOperatorPassword('12345678');
-    setOperatorError(null);
-  };
-
-  // Auto-fill passenger demo credentials
-  const fillPassengerDemo = () => {
-    setPassengerEmail('passenger@smarteta.in');
-    setPassengerPassword('passenger123');
-    setPassengerError(null);
   };
 
   // Handle Passenger Login
@@ -206,26 +191,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </div>
               </div>
 
-              {/* Demo Credentials Quick-Fill Alert Banner */}
-              <div className="bg-blue-950/50 border border-blue-700/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-blue-300">
-                    <KeyRound className="w-4 h-4 text-blue-400" />
-                    <span>Operator Authorized Credentials:</span>
-                  </div>
-                  <div className="font-mono text-slate-300 text-[11px]">
-                    Email: <span className="text-amber-300 font-bold">trainetaoperator@gmail.com</span> • Pass: <span className="text-amber-300 font-bold">12345678</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={fillOperatorDemo}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shrink-0 transition-colors shadow-xs"
-                >
-                  Auto-Fill
-                </button>
-              </div>
-
               {/* Error Message if invalid */}
               {operatorError && (
                 <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-800/80 text-red-200 text-xs font-bold flex items-center gap-2.5 animate-shake">
@@ -330,26 +295,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <p className="text-xs text-slate-400 font-medium mt-1">
                   Sign in to access real-time ML-predicted arrival times, station countdowns, and live GPS tracking.
                 </p>
-              </div>
-
-              {/* Passenger Quick-Fill Banner */}
-              <div className="bg-emerald-950/40 border border-emerald-700/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-emerald-300">
-                    <KeyRound className="w-4 h-4 text-emerald-400" />
-                    <span>Passenger Access:</span>
-                  </div>
-                  <div className="font-mono text-slate-300 text-[11px]">
-                    Email: <span className="text-emerald-300 font-bold">passenger@smarteta.in</span> • Pass: <span className="text-emerald-300 font-bold">passenger123</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={fillPassengerDemo}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shrink-0 transition-colors shadow-xs"
-                >
-                  Auto-Fill
-                </button>
               </div>
 
               {/* Error Alert if any */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Lock, Mail, X, AlertCircle, ArrowRight, KeyRound, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Shield, Lock, Mail, X, AlertCircle, ArrowRight, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { AuthUser } from '../../types';
 
 interface OperatorAuthModalProps {
@@ -48,12 +48,6 @@ export const OperatorAuthModal: React.FC<OperatorAuthModalProps> = ({
     }, 300);
   };
 
-  const autoFillDemo = () => {
-    setEmail('trainetaoperator@gmail.com');
-    setPassword('12345678');
-    setError(null);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -88,21 +82,6 @@ export const OperatorAuthModal: React.FC<OperatorAuthModalProps> = ({
           <span>
             The Operator Console controls live interlocking signals, what-if dispatch simulations, and speed restrictions. Please authenticate with official credentials.
           </span>
-        </div>
-
-        {/* Quick Demo Credentials Info */}
-        <div className="mt-3 bg-blue-950/40 border border-blue-800/50 rounded-2xl p-3 flex items-center justify-between gap-2 text-xs">
-          <div className="font-mono text-[11px] text-blue-300">
-            <div>Email: <strong className="text-white">trainetaoperator@gmail.com</strong></div>
-            <div>Password: <strong className="text-white">12345678</strong></div>
-          </div>
-          <button
-            type="button"
-            onClick={autoFillDemo}
-            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs shrink-0 transition-colors"
-          >
-            Auto-Fill
-          </button>
         </div>
 
         {/* Error Alert */}
