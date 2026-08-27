@@ -50,6 +50,7 @@ function MainTrainDashboard({
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState<boolean>(false);
   const [isArrivalAlertsModalOpen, setIsArrivalAlertsModalOpen] = useState<boolean>(false);
   const [isControlRoomModalOpen, setIsControlRoomModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
   const [savedCount, setSavedCount] = useState<number>(getOfflineTrains().length);
 
@@ -214,6 +215,7 @@ function MainTrainDashboard({
           setActiveAlertStation(selectedTrain.destStation);
           setIsArrivalAlertsModalOpen(true);
         }}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled((prev) => !prev)}
         activeSavedCount={savedCount}
@@ -357,12 +359,20 @@ function MainTrainDashboard({
         currentLang={currentLang}
       />
 
+      {/* Cloud Authentication Modal */}
+      <AuthScreen
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentLang={currentLang}
+        onLanguageChange={setCurrentLang}
+      />
+
     </div>
   );
 }
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const [currentLang, setCurrentLang] = useState<LanguageCode>('en');
 
   if (loading) {
@@ -376,18 +386,6 @@ function AppContent() {
           <span>Connecting to Firebase & Railway Engine...</span>
         </div>
       </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <>
-        <ToastNotificationHost />
-        <AuthScreen 
-          currentLang={currentLang as any} 
-          onLanguageChange={(l) => setCurrentLang(l as LanguageCode)} 
-        />
-      </>
     );
   }
 

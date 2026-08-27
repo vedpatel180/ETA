@@ -26,6 +26,7 @@ interface NavbarProps {
   onOpenControlRoom: () => void;
   onOpenOfflineManager: () => void;
   onOpenAlertsManager: () => void;
+  onOpenAuthModal?: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
   activeSavedCount: number;
@@ -40,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenControlRoom,
   onOpenOfflineManager,
   onOpenAlertsManager,
+  onOpenAuthModal,
   soundEnabled,
   onToggleSound,
   activeSavedCount
@@ -212,8 +214,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               </select>
             </div>
 
-            {/* User Account / Profile & Sign Out */}
-            {user && (
+            {/* User Account / Profile & Sign Out or Sign In Trigger */}
+            {user ? (
               <div className="relative">
                 <button
                   id="user-profile-button"
@@ -292,6 +294,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 )}
               </div>
+            ) : (
+              <button
+                id="btn-open-auth-modal"
+                onClick={onOpenAuthModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-[#111111] hover:bg-[#003399] text-white transition-all shadow-xs cursor-pointer"
+                title="Sign In or Register with Firebase"
+              >
+                <UserIcon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign In</span>
+              </button>
             )}
 
           </div>
