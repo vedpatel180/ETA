@@ -7,6 +7,7 @@ export type TrafficLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 export type UserRole = 'OPERATOR' | 'PASSENGER';
 
 export interface AuthUser {
+  uid?: string;
   email: string;
   role: UserRole;
   name: string;

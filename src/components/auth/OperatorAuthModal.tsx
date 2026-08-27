@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Mail, X, AlertCircle, ArrowRight, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { AuthUser } from '../../types';
+import { authenticateWithFirebase } from '../../services/firebase';
 
 interface OperatorAuthModalProps {
   isOpen: boolean;
@@ -21,31 +22,24 @@ export const OperatorAuthModal: React.FC<OperatorAuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const cleanEmail = email.trim().toLowerCase();
-      const cleanPassword = password.trim();
+    try {
+      const result = await authenticateWithFirebase(email, password, 'OPERATOR');
+      setIsSubmitting(false);
 
-      if (cleanEmail === 'trainetaoperator@gmail.com' && cleanPassword === '12345678') {
-        const operatorUser: AuthUser = {
-          email: 'trainetaoperator@gmail.com',
-          role: 'OPERATOR',
-          name: 'Chief Train Controller',
-          department: 'Control Office - Western Railway (BCT Division)',
-          badgeId: 'IR-WR-OP-8492',
-          loginTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setIsSubmitting(false);
-        onVerifySuccess(operatorUser);
+      if (result.success && result.user) {
+        onVerifySuccess(result.user);
       } else {
-        setError('Access Denied: Invalid Operator credentials. Required: trainetaoperator@gmail.com / 12345678');
-        setIsSubmitting(false);
+        setError(result.error || 'Access Denied: Invalid Operator credentials.');
       }
-    }, 300);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setError('Operator verification error. Please try again.');
+    }
   };
 
   return (

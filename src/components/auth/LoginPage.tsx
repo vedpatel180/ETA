@@ -16,6 +16,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { AuthUser, UserRole } from '../../types';
+import { authenticateWithFirebase } from '../../services/firebase';
 
 interface LoginPageProps {
   onLoginSuccess: (user: AuthUser) => void;
@@ -42,34 +43,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [passengerError, setPassengerError] = useState<string | null>(null);
 
   // Handle Operator Login
-  const handleOperatorLogin = (e: React.FormEvent) => {
+  const handleOperatorLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setOperatorError(null);
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const cleanEmail = operatorEmail.trim().toLowerCase();
-      const cleanPassword = operatorPassword.trim();
+    try {
+      const result = await authenticateWithFirebase(operatorEmail, operatorPassword, 'OPERATOR');
+      setIsSubmitting(false);
 
-      if (cleanEmail === 'trainetaoperator@gmail.com' && cleanPassword === '12345678') {
-        const user: AuthUser = {
-          email: 'trainetaoperator@gmail.com',
-          role: 'OPERATOR',
-          name: 'Chief Train Controller',
-          department: 'Control Office - Western Railway (BCT Division)',
-          badgeId: 'IR-WR-OP-8492',
-          loginTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        onLoginSuccess(user);
+      if (result.success && result.user) {
+        onLoginSuccess(result.user);
       } else {
-        setOperatorError('Invalid credentials. Required: trainetaoperator@gmail.com / 12345678');
-        setIsSubmitting(false);
+        setOperatorError(result.error || 'Authentication failed. Please check your credentials.');
       }
-    }, 350);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setOperatorError('Login error occurred. Please try again.');
+    }
   };
 
   // Handle Passenger Login
-  const handlePassengerLogin = (e: React.FormEvent) => {
+  const handlePassengerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPassengerError(null);
 
@@ -80,28 +75,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       setPassengerError('Please enter your email ID');
       return;
     }
-    if (!cleanPassword || cleanPassword.length < 4) {
-      setPassengerError('Please enter your password (minimum 4 characters)');
+    if (!cleanPassword) {
+      setPassengerError('Please enter your password');
       return;
     }
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const derivedName = cleanEmail.includes('@')
-        ? cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-        : 'Commuter Traveler';
-
-      const user: AuthUser = {
-        email: cleanEmail,
-        role: 'PASSENGER',
-        name: derivedName || 'Commuter Traveler',
-        department: 'Commuter / Passenger Live Portal',
-        loginTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
+    try {
+      const result = await authenticateWithFirebase(cleanEmail, cleanPassword, 'PASSENGER');
       setIsSubmitting(false);
-      onLoginSuccess(user);
-    }, 250);
+
+      if (result.success && result.user) {
+        onLoginSuccess(result.user);
+      } else {
+        setPassengerError(result.error || 'Authentication failed. Please try again.');
+      }
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setPassengerError('Login error occurred. Please try again.');
+    }
   };
 
   return (
@@ -305,7 +298,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </div>
               )}
 
-              <form onSubmit={handlePassengerLogin} className="space-y-4">
+              <form onSubmit={handlePassengerSubmit} className="space-y-4">
                 <div>
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
                     Email ID
@@ -316,7 +309,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       type="email"
                       required
                       value={passengerEmail}
-                      onChange={(e) => setPassengerEmail(e.target.value)}
+                      onChange={(e) => {
+                        setPassengerEmail(e.target.value);
+                        setPassengerError(null);
+                      }}
                       placeholder="e.g. passenger@smarteta.in or your email"
                       className="w-full pl-10 pr-4 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                     />
@@ -328,7 +324,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                       Password
                     </label>
-                    <span className="text-[10px] text-slate-500 font-mono">Min 4 characters</span>
                   </div>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -336,7 +331,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       type={showPassengerPassword ? 'text' : 'password'}
                       required
                       value={passengerPassword}
-                      onChange={(e) => setPassengerPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassengerPassword(e.target.value);
+                        setPassengerError(null);
+                      }}
                       placeholder="••••••••"
                       className="w-full pl-10 pr-10 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all font-mono"
                     />
@@ -357,7 +355,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {isSubmitting ? (
-                      <span>Signing in...</span>
+                      <span>Entering Portal...</span>
                     ) : (
                       <>
                         <span>Enter Live Commuter Portal</span>
