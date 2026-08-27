@@ -14,8 +14,7 @@ import {
   Compass,
   KeyRound,
   Eye,
-  EyeOff,
-  Ticket
+  EyeOff
 } from 'lucide-react';
 import { AuthUser, UserRole } from '../../types';
 
@@ -38,9 +37,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Passenger Form State
-  const [passengerName, setPassengerName] = useState('Commuter Guest');
-  const [passengerEmail, setPassengerEmail] = useState('passenger@smarteta.in');
-  const [passengerTrainNo, setPassengerTrainNo] = useState('12901');
+  const [passengerEmail, setPassengerEmail] = useState('');
+  const [passengerPassword, setPassengerPassword] = useState('');
+  const [showPassengerPassword, setShowPassengerPassword] = useState(false);
+  const [passengerError, setPassengerError] = useState<string | null>(null);
 
   // Handle Operator Login
   const handleOperatorLogin = (e: React.FormEvent) => {
@@ -76,20 +76,45 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setOperatorError(null);
   };
 
+  // Auto-fill passenger demo credentials
+  const fillPassengerDemo = () => {
+    setPassengerEmail('passenger@smarteta.in');
+    setPassengerPassword('passenger123');
+    setPassengerError(null);
+  };
+
   // Handle Passenger Login
   const handlePassengerLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setPassengerError(null);
+
+    const cleanEmail = passengerEmail.trim().toLowerCase();
+    const cleanPassword = passengerPassword.trim();
+
+    if (!cleanEmail) {
+      setPassengerError('Please enter your email ID');
+      return;
+    }
+    if (!cleanPassword || cleanPassword.length < 4) {
+      setPassengerError('Please enter your password (minimum 4 characters)');
+      return;
+    }
+
     setIsSubmitting(true);
 
     setTimeout(() => {
+      const derivedName = cleanEmail.includes('@')
+        ? cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+        : 'Commuter Traveler';
+
       const user: AuthUser = {
-        email: passengerEmail.trim() || 'passenger@smarteta.in',
+        email: cleanEmail,
         role: 'PASSENGER',
-        name: passengerName.trim() || 'Passenger',
-        department: 'Commuter / Live Traveler',
-        pnrOrTicket: passengerTrainNo.trim() ? `TR-${passengerTrainNo.trim()}` : 'PNR-849102948',
+        name: derivedName || 'Commuter Traveler',
+        department: 'Commuter / Passenger Live Portal',
         loginTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
+      setIsSubmitting(false);
       onLoginSuccess(user);
     }, 250);
   };
@@ -303,58 +328,80 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   Passenger & Commuter Live Portal
                 </h2>
                 <p className="text-xs text-slate-400 font-medium mt-1">
-                  Access AI-predicted dynamic arrival times, station arrival countdowns, and platform forecasts.
+                  Sign in to access real-time ML-predicted arrival times, station countdowns, and live GPS tracking.
                 </p>
               </div>
+
+              {/* Passenger Quick-Fill Banner */}
+              <div className="bg-emerald-950/40 border border-emerald-700/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-300">
+                    <KeyRound className="w-4 h-4 text-emerald-400" />
+                    <span>Passenger Access:</span>
+                  </div>
+                  <div className="font-mono text-slate-300 text-[11px]">
+                    Email: <span className="text-emerald-300 font-bold">passenger@smarteta.in</span> • Pass: <span className="text-emerald-300 font-bold">passenger123</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={fillPassengerDemo}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shrink-0 transition-colors shadow-xs"
+                >
+                  Auto-Fill
+                </button>
+              </div>
+
+              {/* Error Alert if any */}
+              {passengerError && (
+                <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-800/80 text-red-200 text-xs font-bold flex items-center gap-2.5 animate-shake">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                  <span>{passengerError}</span>
+                </div>
+              )}
 
               <form onSubmit={handlePassengerLogin} className="space-y-4">
                 <div>
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                    Your Name (Optional)
+                    Email ID
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
-                      type="text"
-                      value={passengerName}
-                      onChange={(e) => setPassengerName(e.target.value)}
-                      placeholder="e.g. Rahul Sharma"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      type="email"
+                      required
+                      value={passengerEmail}
+                      onChange={(e) => setPassengerEmail(e.target.value)}
+                      placeholder="e.g. passenger@smarteta.in or your email"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                      Train / PNR Number
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Password
                     </label>
-                    <div className="relative">
-                      <Ticket className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={passengerTrainNo}
-                        onChange={(e) => setPassengerTrainNo(e.target.value)}
-                        placeholder="12901"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-mono"
-                      />
-                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono">Min 4 characters</span>
                   </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                      Email / Mobile (Optional)
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="email"
-                        value={passengerEmail}
-                        onChange={(e) => setPassengerEmail(e.target.value)}
-                        placeholder="passenger@smarteta.in"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      />
-                    </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showPassengerPassword ? 'text' : 'password'}
+                      required
+                      value={passengerPassword}
+                      onChange={(e) => setPassengerPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-10 py-3 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassengerPassword(!showPassengerPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    >
+                      {showPassengerPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
@@ -362,10 +409,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
-                    <span>Enter Live Commuter Portal</span>
-                    <ArrowRight className="w-4 h-4" />
+                    {isSubmitting ? (
+                      <span>Signing in...</span>
+                    ) : (
+                      <>
+                        <span>Enter Live Commuter Portal</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

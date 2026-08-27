@@ -13,7 +13,8 @@ import {
   X,
   LogOut,
   Shield,
-  Ticket
+  Ticket,
+  Lock
 } from 'lucide-react';
 import { TrainData, UserRole, AuthUser } from '../../types';
 
@@ -283,9 +284,10 @@ export const TopNav: React.FC<TopNavProps> = ({
                       setIsProfileOpen(false);
                       onToggleRole();
                     }}
-                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    Switch to {userRole === 'OPERATOR' ? 'Passenger View' : 'Operator Control'}
+                    {userRole === 'PASSENGER' && <Lock className="w-3.5 h-3.5 text-amber-500" />}
+                    <span>{userRole === 'OPERATOR' ? 'Switch to Passenger View' : 'Operator Control (Protected)'}</span>
                   </button>
 
                   {onLogout && (

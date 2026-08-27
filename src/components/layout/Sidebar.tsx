@@ -18,7 +18,8 @@ import {
   ChevronRight,
   LogOut,
   Shield,
-  User
+  User,
+  Lock
 } from 'lucide-react';
 import { UserRole, AuthUser } from '../../types';
 
@@ -100,21 +101,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Role Switcher Pill */}
+      {/* Role Pill Switcher */}
       <div className="px-4 pt-4 pb-2">
         <div className="bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 flex items-center text-xs">
           <button
-            onClick={() => userRole !== 'OPERATOR' && onToggleRole()}
-            className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center cursor-pointer ${
+            onClick={() => {
+              if (userRole !== 'OPERATOR') {
+                onToggleRole();
+              }
+            }}
+            className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer ${
               userRole === 'OPERATOR'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Operator
+            {userRole === 'PASSENGER' && <Lock className="w-3 h-3 text-amber-400" />}
+            <span>Operator</span>
           </button>
           <button
-            onClick={() => userRole !== 'PASSENGER' && onToggleRole()}
+            onClick={() => {
+              if (userRole !== 'PASSENGER') {
+                onToggleRole();
+              }
+            }}
             className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center cursor-pointer ${
               userRole === 'PASSENGER'
                 ? 'bg-blue-600 text-white shadow-sm'
